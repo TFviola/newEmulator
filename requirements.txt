@@ -1,0 +1,12 @@
+flask
+waitress
+websockets
+requests
+pyinstaller
+openai
+python-dotenv
+pyautogui
+langchain
+playwright
+selenium
+webdriver_manager 
