@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>QuickClaim Login</title>
+
+  <!-- Tailwind CSS via CDN -->
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/tailwindcss@3.2.7/dist/tailwind.min.css"
+  />
+
+  <!-- Optional: Link to a custom style if you need it -->
+  <!-- <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"> -->
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+  <!-- Outer background is gray. The rest is in the white 'login-wrapper'. -->
+  <div class="login-wrapper w-4/5 max-w-[900px] bg-white shadow-md">
+    <!-- ORANGE TOP BAR (inside the container, not full screen) -->
+    <div class="top-bar h-[50px] w-full bg-orange-500"></div>
+
+    <!-- MAIN LOGIN CONTAINER: Two Columns -->
+    <div class="login-container flex w-full">
+      <!-- LEFT COLUMN - Form -->
+      <div class="login-left flex-1 p-8 min-w-[280px]">
+        <h2 class="text-xl font-semibold mb-4">Welcome to QuickClaim!</h2>
+
+        <!-- Simple form with no back-end logic here,
+             since we're just demonstrating the layout -->
+        <form class="flex flex-col">
+          <label for="username" class="font-semibold mb-1">Username</label>
+          <input
+            type="text"
+            id="username"
+            class="border border-gray-300 rounded px-3 py-2 mb-4 w-[80%] max-w-[280px]"
+          />
+
+          <label for="password" class="font-semibold mb-1">Password</label>
+          <input
+            type="password"
+            id="password"
+            class="border border-gray-300 rounded px-3 py-2 mb-4 w-[80%] max-w-[280px]"
+          />
+
+          <button
+            type="submit"
+            class="btn-login w-[140px] py-2 bg-gray-300 text-white rounded hover:bg-gray-400"
+          >
+            Sign In
+          </button>
+
+          <div class="forgot-password mt-3">
+            <a href="#" class="text-blue-600 text-sm hover:underline">
+              Forgot your password?
+            </a>
+          </div>
+        </form>
+      </div>
+
+      <!-- RIGHT COLUMN - Blue Panel with full-fit image -->
+      <div class="login-right flex-1 flex min-w-[280px] h-auto">
+        <!-- Put your logo in 'static/images/' folder as 'logo.png' -->
+        <img
+          src="{{ url_for('static', filename='images/logo.png') }}"
+          alt="Company Logo"
+          class="w-full h-full object-cover"
+        />
+      </div>
+    </div>
+
+    <!-- FOOTER (Disclaimers) - still inside the .login-wrapper -->
+    <footer class="text-[9px] text-center p-4">
+      <p>
+        By logging into QuickClaim, you are agreeing to comply with the policies
+        and restrictions outlined in the links below:
+      </p>
+      <p>
+        <a href="#" class="text-blue-600 hover:underline"
+          >QuickClaim End User Agreement</a
+        >
+        |
+        <a href="#" class="text-blue-600 hover:underline"
+          >QuickClaim Privacy Notice</a
+        >
+      </p>
+      <p class="mt-4">
+        Copyright © 2002–2025
+        Smart Data Solutions, Inc. All rights reserved.<br />
+        HTTPS Connection: TLS_AES_256_GCM_SHA384
+      </p>
+      <p class="mt-2">
+        CPT © 2025 American Medical Association. All rights reserved.<br />
+        Fee schedules, relative value units, conversion factors and/or related
+        components are not assigned by the AMA, are not part of CPT, and the AMA
+        is not recommending their use. The AMA does not directly or indirectly practice
+        medicine or dispense medical services. The AMA assumes no liability for data
+        contained or not contained herein.
+      </p>
+      <p class="mt-4">
+        CPT is a registered trademark of the American Medical Association
+      </p>
+      <p class="mt-2">
+        U.S. Government Rights<br />
+        This product includes CPT and/or CPT® Changes which are commercial
+        technical data. Work was developed exclusively at private expense by the
+        American Medical Association, 330 North Wabash Avenue, Chicago, Illinois
+        60611. The American Medical Association does not accept licenses to
+        license CPT® to the Federal Government based on the license in FAR
+        12.211-7013 (Data Rights - General) and DFARS 252.227-7015 (Technical Data
+        - Commercial Items) or any other license provision. The American Medical
+        Association reserves all rights to approve any license with any Federal
+        agency.
+      </p>
+    </footer>
+  </div>
+</body>
+</html>
