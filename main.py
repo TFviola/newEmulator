@@ -21,7 +21,7 @@ from util.screen_analyzer import ScreenAnalyzer
 stop_event = threading.Event()
 
 app = Flask(__name__, static_url_path='', static_folder='static')
-print("http://localhost:5002")
+print("http://localhost:5003")
 connected_clients = set()
 message_queue = asyncio.Queue()  # Use asyncio.Queue for async operations
 queue_has_items = asyncio.Event() # Event to signal when the queue is not empty
@@ -29,7 +29,7 @@ queue_has_items = asyncio.Event() # Event to signal when the queue is not empty
 
 # # we are using url_for which requires app_context
 # # for app_context to work for static a SERVER_NAME needs to be set
-# app.config['SERVER_NAME'] = 'localhost:5000'
+# app.config['SERVER_NAME'] = 'localhost:5003'
 
 # # storing a variable for local thread only because wssserver, flask all run in their own thread
 # # the variable should be available in their thread
@@ -152,8 +152,8 @@ def flask_thread_function():
     # with app.app_context():
     #     app_context.app = app
 
-    server = serve(app, host='0.0.0.0', port=5000, threads=1, _quiet=True)
-    print("Flask thread started @ http://localhost:5000")
+    server = serve(app, host='0.0.0.0', port=5003, threads=1, _quiet=True)
+    print("Flask thread started @ http://localhost:5003")
 
     while not stop_event.is_set():
         time.sleep(0.1)  # Important: Check the stop event periodically
@@ -291,7 +291,7 @@ async def main():
         elif user_input.startswith("r "):
             message = user_input[2:]
             try:
-                response = requests.post('http://localhost:5000/command', json={"message": message})
+                response = requests.post('http://localhost:5003/command', json={"message": message})
                 print(f"REST API response: {response.json()}")
             except requests.exceptions.RequestException as e:
                 print(f"Error sending to REST API: {e}")

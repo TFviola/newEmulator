@@ -382,6 +382,7 @@
         const COMMAND_THROTTLE = 500;
         const MAX_RECONNECT_ATTEMPTS = 5;
         const VALID_COMMANDS = new Set(['1', '2', '3', '4', '5', '6', '7', '8', '9', 'F3', 'Credentials', 'back']);
+        const BASE_URL = 'http://localhost:5003';
 
         // Screen navigation mapping
         const SCREEN_FLOW = {
@@ -510,7 +511,7 @@
             try {
                 currentScreen = screenName;
                 // Make an API call to get the screen data
-                fetch(`/api/screen/${screenName}`)
+                fetch(`${BASE_URL}/api/screen/${screenName}`)
                     .then(response => response.json())
                     .then(data => {
                         if (data.image_url) {
@@ -522,8 +523,8 @@
                             });
                             $('#displayed-image').on('load', function() {
                                 console.log('Successfully loaded image:', data.image_url);
+                                updateNavigationButtons();
                             });
-                            updateNavigationButtons();
                         }
                     })
                     .catch(error => {
@@ -556,22 +557,33 @@
             }
 
             try {
-                // Validate command is in allowed set
                 if (!VALID_COMMANDS.has(command)) {
                     console.log('Invalid command:', command);
                     return;
                 }
 
-                // Validate command for current screen
                 if (SCREEN_FLOW[currentScreen] && SCREEN_FLOW[currentScreen][command]) {
                     console.log('Sending command:', command);
-                    websocket.send(command);
-                    lastCommandTime = now;
-                    
-                    const nextScreen = SCREEN_FLOW[currentScreen][command];
-                    if (nextScreen) {
-                        setTimeout(() => loadScreen(nextScreen), 100);
-                    }
+                    fetch(`${BASE_URL}/command`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ message: command }),
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Command response:', data);
+                        lastCommandTime = now;
+                        
+                        const nextScreen = SCREEN_FLOW[currentScreen][command];
+                        if (nextScreen) {
+                            setTimeout(() => loadScreen(nextScreen), 100);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error sending command:', error);
+                    });
                 } else {
                     console.log('Invalid command for current screen:', command);
                 }
@@ -623,6 +635,7 @@
         }
 
         function updateNavigationButtons() {
+            console.log('Updating navigation buttons for screen:', currentScreen);
             $('#navigation-buttons').empty();
             const backButton = $('#back-button');
             
@@ -680,7 +693,14 @@
         }
 
         $('#btn-restart').click(function() {
-            loadScreen('eligibility_main_menu');
+            currentScreen = 'ELIGIBILITY_MAIN_MENU';
+            // Send restart command to server
+            if (websocket && websocket.readyState === WebSocket.OPEN) {
+                websocket.send('off');
+            }
+            // Force reload screen and buttons
+            loadScreen('ELIGIBILITY_MAIN_MENU');
+            updateNavigationButtons();
         });
 
         $('#back-button').click(function() {
