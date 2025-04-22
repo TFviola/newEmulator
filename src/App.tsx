@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Globe, Home, FileText, Link, Users, LogOut, HelpCircle, AlertCircle, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Printer, Sun } from 'lucide-react';
-import claimForm from './images/ClaimFormImage.png';
+import claimForm from './images/ClaimFormImage.jpg';
 import { jsPDF } from 'jspdf';
 import myLogo from './images/myCompanyLogo.png'; 
 import logo from './images/logo.png';
