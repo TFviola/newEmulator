@@ -1,4 +1,4 @@
- import asyncio
+import asyncio
 import base64
 import json
 import threading
@@ -11,7 +11,7 @@ stop_event = threading.Event()
 class EmulatorClient:
     def __init__(self):
         self.REST_API_URL = "http://localhost:5000/api"
-        self.current_screen = N one
+        self.current_screen = None
         self.typed_text = ""
 
     def get_screen(self, screen_code):

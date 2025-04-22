@@ -56,7 +56,7 @@ def receive_data():
     print('inside /command API endpoint')
     data = request.get_json()
     print(f"Received data from REST API: {data}")
-
+    
     response = SCREENS.handle_input(data["message"])
     
     _jsonify = jsonify(response)
