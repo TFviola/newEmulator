@@ -21,7 +21,7 @@ from util.screen_analyzer import ScreenAnalyzer
 stop_event = threading.Event()
 
 app = Flask(__name__, static_url_path='', static_folder='static')
-print("http://localhost:5000")
+print("http://localhost:5002")
 connected_clients = set()
 message_queue = asyncio.Queue()  # Use asyncio.Queue for async operations
 queue_has_items = asyncio.Event() # Event to signal when the queue is not empty

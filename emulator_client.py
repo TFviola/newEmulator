@@ -79,4 +79,4 @@ class EmulatorClient:
             return response.json()
         except Exception as e:
             print(f"Error analyzing screen: {e}")
-            return {"error": str(e)}
+            return {"error": str(e)} 
