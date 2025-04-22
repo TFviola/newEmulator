@@ -1,10 +1,15 @@
- import asyncio
+import asyncio
 import base64
 import json
 import threading
 import time
 from flask import jsonify
 import requests
+import websockets
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 stop_event = threading.Event()
 
@@ -55,6 +60,7 @@ class EmulatorClient:
     def process_command(self, command):
         """Process various commands including navigation and typing"""
         try:
+            command = command.upper()  # Convert command to uppercase
             # Check if it's a navigation command
             if command.startswith("NAV:"):
                 _, screen_code, nav_key = command.split(":")

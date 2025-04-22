@@ -16,7 +16,7 @@ screens = {
     ScreenNames.OFF: {
         "image_url": "off.jpg",
         "navigations": {
-            "start": ScreenNames.LOGIN
+            "START": ScreenNames.LOGIN
         },
         "extra_data": switched_off
     },
@@ -36,7 +36,7 @@ screens = {
             "3": ScreenNames.MAIN_MENU,
             "4": ScreenNames.MAIN_MENU,
             "5": ScreenNames.MAIN_MENU,
-            "back": ScreenNames.LOGIN
+            "BACK": ScreenNames.LOGIN
         },
         "extra_data": main_menu
     },
@@ -48,71 +48,71 @@ screens = {
             "3": ScreenNames.FIRST_WORKFLOW_QUEUE,
             "4": ScreenNames.FIRST_WORKFLOW_QUEUE,
             "5": ScreenNames.FIRST_WORKFLOW_QUEUE,
-            "back": ScreenNames.MAIN_MENU
+            "BACK": ScreenNames.MAIN_MENU
         },
         "extra_data": first_workflow_queue
     },
     ScreenNames.RECORD_DETAILS: {
         "image_url": "record_details.jpg",
         "navigations": {
-            "a": ScreenNames.RECORD_DETAILS,
-            "b": ScreenNames.RECORD_DETAILS,
-            "c": ScreenNames.RECORD_DETAILS,
-            "d": ScreenNames.CLAIM_DETAILS,
-            "e": ScreenNames.RECORD_DETAILS,
-            "f": ScreenNames.RECORD_DETAILS,
-            "g": ScreenNames.RECORD_DETAILS,
-            "h": ScreenNames.RECORD_DETAILS,
-            "i": ScreenNames.RECORD_DETAILS,
-            "j": ScreenNames.RECORD_DETAILS,
-            "k": ScreenNames.RECORD_DETAILS,
-            "l": ScreenNames.RECORD_DETAILS,
-            "m": ScreenNames.RECORD_DETAILS,
-            "n": ScreenNames.RECORD_DETAILS,
-            "o": ScreenNames.RECORD_DETAILS,
-            "back": ScreenNames.FIRST_WORKFLOW_QUEUE
+            "A": ScreenNames.RECORD_DETAILS,
+            "B": ScreenNames.RECORD_DETAILS,
+            "C": ScreenNames.RECORD_DETAILS,
+            "D": ScreenNames.CLAIM_DETAILS,
+            "E": ScreenNames.RECORD_DETAILS,
+            "F": ScreenNames.RECORD_DETAILS,
+            "G": ScreenNames.RECORD_DETAILS,
+            "H": ScreenNames.RECORD_DETAILS,
+            "I": ScreenNames.RECORD_DETAILS,
+            "J": ScreenNames.RECORD_DETAILS,
+            "K": ScreenNames.RECORD_DETAILS,
+            "L": ScreenNames.RECORD_DETAILS,
+            "M": ScreenNames.RECORD_DETAILS,
+            "N": ScreenNames.RECORD_DETAILS,
+            "O": ScreenNames.RECORD_DETAILS,
+            "BACK": ScreenNames.FIRST_WORKFLOW_QUEUE
         },
         "extra_data": record_details
     },
     ScreenNames.CLAIM_DETAILS: {
         "image_url": "claim_details.jpg",
         "navigations": {
-            "m": ScreenNames.CLAIM_DETAILS,
-            "p": ScreenNames.CLAIM_DETAILS,
-            "r": ScreenNames.CLAIM_DETAILS,
-            "f": ScreenNames.CLAIM_DETAILS,
-            "v": ScreenNames.SELECT_OPTIONS,
-            "o": ScreenNames.CLAIM_DETAILS,
-            "back": ScreenNames.RECORD_DETAILS
+            "M": ScreenNames.CLAIM_DETAILS,
+            "P": ScreenNames.CLAIM_DETAILS,
+            "R": ScreenNames.CLAIM_DETAILS,
+            "F": ScreenNames.CLAIM_DETAILS,
+            "V": ScreenNames.SELECT_OPTIONS,
+            "O": ScreenNames.CLAIM_DETAILS,
+            "BACK": ScreenNames.RECORD_DETAILS
         },
         "extra_data": None  # Will be populated from claim_details based on ID
     },
     ScreenNames.SELECT_OPTIONS: {
         "image_url": "select_options.jpg",
         "navigations": {
-            "s": ScreenNames.SELECT_OPTIONS,
-            "g": ScreenNames.SELECT_OPTIONS,
-            "e": ScreenNames.SELECT_OPTIONS,
-            "b": ScreenNames.SELECT_OPTIONS,
-            "p": ScreenNames.SELECT_OPTIONS,
-            "r": ScreenNames.SELECT_OPTIONS,
-            "i": ScreenNames.WORKFLOW_IMAGES,
-            "l": ScreenNames.SELECT_OPTIONS,
-            "h": ScreenNames.SELECT_OPTIONS,
-            "n": ScreenNames.SELECT_OPTIONS,
-            "a": ScreenNames.SELECT_OPTIONS,
-            "v": ScreenNames.SELECT_OPTIONS,
-            "u": ScreenNames.SELECT_OPTIONS,
-            "y": ScreenNames.SELECT_OPTIONS,
-            "back": ScreenNames.CLAIM_DETAILS
+            "S": ScreenNames.SELECT_OPTIONS,
+            "G": ScreenNames.SELECT_OPTIONS,
+            "E": ScreenNames.SELECT_OPTIONS,
+            "B": ScreenNames.SELECT_OPTIONS,
+            "P": ScreenNames.SELECT_OPTIONS,
+            "R": ScreenNames.SELECT_OPTIONS,
+            "I": ScreenNames.WORKFLOW_IMAGES,
+            "L": ScreenNames.SELECT_OPTIONS,
+            "H": ScreenNames.SELECT_OPTIONS,
+            "N": ScreenNames.SELECT_OPTIONS,
+            "A": ScreenNames.SELECT_OPTIONS,
+            "V": ScreenNames.SELECT_OPTIONS,
+            "U": ScreenNames.SELECT_OPTIONS,
+            "Y": ScreenNames.SELECT_OPTIONS,
+            "BACK": ScreenNames.CLAIM_DETAILS
         },
         "extra_data": select_options
     },
     ScreenNames.WORKFLOW_IMAGES: {
         "image_url": "workflow_images.jpg",
         "navigations": {
-            "a": ScreenNames.WORKFLOW_IMAGES,
-            "back": ScreenNames.SELECT_OPTIONS
+            "A": ScreenNames.WORKFLOW_IMAGES,
+            "BACK": ScreenNames.SELECT_OPTIONS
         },
         "extra_data": workflow_images
     }
@@ -145,9 +145,12 @@ class Screens:
             if screen_name == ScreenNames.CLAIM_DETAILS:
                 extra_data = claim_details
             
+            # Convert navigation options to uppercase
+            navigation_options = [opt.upper() for opt in screen_data["navigations"].keys()]
+            
             return {
                 "image_url": f"static/screenshots/{screen_data['image_url']}",
-                "navigation_options": list(screen_data["navigations"].keys()),
+                "navigation_options": navigation_options,
                 "screen_data": extra_data,
                 "claim_data_id": self.claim_data_id,
                 "is_live_data_parsing": self.live_data_parsing,
@@ -157,16 +160,16 @@ class Screens:
 
     def process_navigation(self, key):
         current_screen_data = self.screens[self.current_screen]
-        if key.lower() in current_screen_data["navigations"]:
-            next_screen = current_screen_data["navigations"][key.lower()]
+        if key.upper() in current_screen_data["navigations"]:
+            next_screen = current_screen_data["navigations"][key.upper()]
             return self.navigate_to(next_screen)
         return self.navigate_to(self.current_screen)
 
     def handle_input(self, input_str):
-        input_str = str(input_str).strip()
+        input_str = str(input_str).strip().upper()  # Convert to uppercase
         
         # Handle data ID changes
-        if input_str.startswith('data '):
+        if input_str.startswith('DATA '):
             try:
                 new_id = int(input_str.split()[1])
                 self.set_claim_data_id(new_id)
@@ -175,19 +178,17 @@ class Screens:
                 pass
 
         # Handle live data parsing changes
-        if input_str.startswith('livedata '):
+        if input_str.startswith('LIVEDATA '):
             try:
                 new_value = bool(int(input_str.split()[1]))
                 self.set_live_data_parsing(new_value)
                 return self.navigate_to(self.current_screen)
             except:
                 pass
-
-        input_str = input_str.lower()
         
-        if input_str == "off":
+        if input_str == "OFF":
             return self.navigate_to(ScreenNames.OFF)
-        elif input_str == "start" or self.current_screen is None:
+        elif input_str == "START" or self.current_screen is None:
             return self.navigate_to(ScreenNames.LOGIN)
 
         current_screen_data = self.screens[self.current_screen]

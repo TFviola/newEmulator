@@ -187,14 +187,15 @@ async def websocket_server():
 async def handler(websocket):
     connected_clients.add(websocket)
     try:
-        initial = SCREENS.handle_input("off")
+        initial = SCREENS.handle_input("OFF")
         # Add screen data to initial response
         if initial:
             screen_data = SCREENS.screens.get(SCREENS.current_screen)
             if screen_data:
                 initial.update({
                     "screen": SCREENS.current_screen.value,
-                    "screen_data": screen_data["extra_data"]
+                    "screen_data": screen_data["extra_data"],
+                    "last_command": "OFF"
                 })
                 # Print screen data to terminal
                 print(f"Screen data for {SCREENS.current_screen.value}:", json.dumps(initial, indent=2))
@@ -204,8 +205,8 @@ async def handler(websocket):
             message = await websocket.recv() # Wait indefinitely for message
             print(f"Received message: {message}")
 
-            # Handle 'a' command for PDF automation
-            if message == 'a':
+            # Handle 'A' command for PDF automation
+            if message == 'A':
                 # Check if automation is already running
                 if hasattr(PDF_AUTOMATOR, '_is_running') and PDF_AUTOMATOR._is_running:
                     print("PDF automation already in progress, skipping...")
@@ -220,7 +221,8 @@ async def handler(websocket):
                         "message": "PDF automation in progress...",
                         "current_screen": SCREENS.current_screen.value,
                         "navigations": {},
-                        "extra_data": {"status": "loading"}
+                        "extra_data": {"status": "loading"},
+                        "last_command": "A"
                     }
                     
                     # Send initial loading state
@@ -231,7 +233,7 @@ async def handler(websocket):
                         return
                     
                     # Get the current screen state before starting automation
-                    initial_response = SCREENS.handle_input("off")  # This ensures we have the current screen
+                    initial_response = SCREENS.handle_input("OFF")  # This ensures we have the current screen
                     
                     def run_pdf_download():
                         return PDF_AUTOMATOR.run_download()
@@ -256,7 +258,8 @@ async def handler(websocket):
                             "success": success,
                             "current_screen": initial_response["current_screen"],
                             "navigations": initial_response.get("navigations", {}),
-                            "extra_data": initial_response.get("extra_data", {})
+                            "extra_data": initial_response.get("extra_data", {}),
+                            "last_command": "A"
                         }
                         
                         # Send final response
@@ -270,7 +273,8 @@ async def handler(websocket):
                         error_response = {
                             "error": str(e),
                             "message": "Failed to process PDF automation",
-                            "success": False
+                            "success": False,
+                            "last_command": "A"
                         }
                         await websocket.send(json.dumps(error_response))
                     except websockets.exceptions.ConnectionClosed:
@@ -286,7 +290,8 @@ async def handler(websocket):
                         if screen_data:
                             response.update({
                                 "screen": SCREENS.current_screen.value,
-                                "screen_data": screen_data["extra_data"]
+                                "screen_data": screen_data["extra_data"],
+                                "last_command": message
                             })
                             # Print screen data to terminal
                             print(f"Screen data for {SCREENS.current_screen.value}:", json.dumps(response, indent=2))
@@ -296,7 +301,8 @@ async def handler(websocket):
                     error_response = {
                         "error": str(e),
                         "message": "Failed to process command",
-                        "success": False
+                        "success": False,
+                        "last_command": message
                     }
                     await websocket.send(json.dumps(error_response))
 

@@ -362,8 +362,12 @@
                         <i class="fas fa-database mr-2"></i>
                         <span id="data-status" class="text-sm">Data ID: 1</span>
                     </div>
+                    <div class="status-indicator">
+                        <i class="fas fa-keyboard mr-2"></i>
+                        <span id="last-command" class="text-sm">Last Command: None</span>
+                    </div>
                 </div>
-    </div>
+            </div>
 
             <div class="screen-wrapper">
                 <img id="displayed-image" src="" alt="Emulator Screen" class="screen-image">
@@ -382,14 +386,14 @@
                     <span>Restart Session</span>
                 </button>
             </div>
-    </div>
+        </div>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         let sessionStartTime = new Date();
         let currentScreen = 'off';  // Track current screen
-            let websocket = new WebSocket('ws://localhost:8767');
+        let websocket = new WebSocket('ws://localhost:8767');
         let commandHistory = [];
         let commandIndex = -1;
 
@@ -429,7 +433,7 @@
         });
 
         websocket.onopen = function() {
-                console.log('Connected to WebSocket server');
+            console.log('Connected to WebSocket server');
             const statusDot = document.getElementById('status-dot');
             const connectionText = document.getElementById('connection-text');
             
@@ -455,40 +459,46 @@
         websocket.onmessage = function(event) {
             console.log('Message received:', event.data);
 
-                try {
-                    let data = JSON.parse(event.data);
-                    if (data.image_url) {
-                        $('#displayed-image').attr('src', data.image_url);
-                    
-                    // Extract screen name from image URL if possible
-                    let imageName = data.image_url.toLowerCase();
-                    if (imageName.includes('off.jpg')) {
-                        currentScreen = 'off';
-                    } else if (imageName.includes('login')) {
-                        currentScreen = 'login';
-                    } else if (imageName.includes('main-menu')) {
-                        currentScreen = 'main-menu';
-                    } else if (imageName.includes('first_workflow_queue')) {
-                        currentScreen = 'first_workflow_queue';
-                    } else if (imageName.includes('record_details')) {
-                        currentScreen = 'record_details';
-                    } else if (imageName.includes('claim_details')) {
-                        currentScreen = 'claim_details';
-                    } else if (imageName.includes('select_options')) {
-                        currentScreen = 'select_options';
-                    } else if (imageName.includes('workflow_queues')) {
-                        currentScreen = 'workflow_queues';
-                    }
-                    
-                    updateNavigationButtons();
-                    }
-                    if (data.analysis_result) {
-                    $('#analysis-area').html(data.analysis_result.replace(/\n/g, '<br>'));
-                    }
-                } catch (error) {
-                    console.error("Error parsing JSON:", error);
+            try {
+                let data = JSON.parse(event.data);
+                if (data.image_url) {
+                    $('#displayed-image').attr('src', data.image_url);
+                
+                // Extract screen name from image URL if possible
+                let imageName = data.image_url.toLowerCase();
+                if (imageName.includes('off.jpg')) {
+                    currentScreen = 'off';
+                } else if (imageName.includes('login')) {
+                    currentScreen = 'login';
+                } else if (imageName.includes('main-menu')) {
+                    currentScreen = 'main-menu';
+                } else if (imageName.includes('first_workflow_queue')) {
+                    currentScreen = 'first_workflow_queue';
+                } else if (imageName.includes('record_details')) {
+                    currentScreen = 'record_details';
+                } else if (imageName.includes('claim_details')) {
+                    currentScreen = 'claim_details';
+                } else if (imageName.includes('select_options')) {
+                    currentScreen = 'select_options';
+                } else if (imageName.includes('workflow_queues')) {
+                    currentScreen = 'workflow_queues';
+                } else if (imageName.includes('sds_loading.jpg')) {
+                    currentScreen = 'loading';
                 }
-            };
+                
+                updateNavigationButtons();
+                }
+                if (data.analysis_result) {
+                $('#analysis-area').html(data.analysis_result.replace(/\n/g, '<br>'));
+                }
+                // Update last command display
+                if (data.last_command) {
+                    $('#last-command').text(`Last Command: ${data.last_command}`);
+                }
+            } catch (error) {
+                console.error("Error parsing JSON:", error);
+            }
+        };
 
         function createButtonGroup() {
             return $('<div>').addClass('button-group');
@@ -558,6 +568,10 @@
                     addButton('A', 'action-key', wfButtons);
                     $('#navigation-buttons').append(wfButtons);
                     break;
+                case 'loading':
+                    backButton.hide();
+                    $('#navigation-buttons').empty(); // Clear all buttons during loading
+                    break;
             }
         }
 
@@ -565,9 +579,9 @@
             const button = $('<button>')
                 .addClass('nav-button')
                 .addClass(className)
-                .html(`<span>${text}</span>`)
+                .html(`<span>${text.toUpperCase()}</span>`)
                 .click(function() {
-                    handleNavigation(text.toLowerCase());
+                    handleNavigation(text.toUpperCase());
                 });
 
             if (container) {
@@ -579,12 +593,13 @@
 
         function handleNavigation(command) {
             let previousScreen = currentScreen;
+            command = command.toUpperCase(); // Ensure command is uppercase
             
             switch(currentScreen) {
                 case 'off':
-                    if(command === 'start') {
+                    if(command === 'START') {
                         currentScreen = 'login';
-                        websocket.send('start');
+                        websocket.send('START');
                     }
                     break;
                 case 'login':
@@ -600,59 +615,59 @@
                     if(command === '1') {
                         currentScreen = 'first_workflow_queue';
                         websocket.send('1');
-                    } else if(command === 'back') {
+                    } else if(command === 'BACK') {
                         currentScreen = 'login';
-                        websocket.send('back');
+                        websocket.send('BACK');
                     }
                     break;
                 case 'first_workflow_queue':
                     if(command === '1') {
                         currentScreen = 'record_details';
                         websocket.send('1');
-                    } else if(command === 'back') {
+                    } else if(command === 'BACK') {
                         currentScreen = 'main-menu';
-                        websocket.send('back');
+                        websocket.send('BACK');
                     }
                     break;
                 case 'record_details':
-                    if(command === 'd') {
+                    if(command === 'D') {
                         currentScreen = 'claim_details';
-                        websocket.send('d');
-                    } else if(command === 'back') {
+                        websocket.send('D');
+                    } else if(command === 'BACK') {
                         currentScreen = 'first_workflow_queue';
-                        websocket.send('back');
+                        websocket.send('BACK');
                     } else {
                         websocket.send(command);
                     }
                     break;
                 case 'claim_details':
-                    if(command === 'v') {
+                    if(command === 'V') {
                         currentScreen = 'select_options';
-                        websocket.send('v');
-                    } else if(command === 'back') {
+                        websocket.send('V');
+                    } else if(command === 'BACK') {
                         currentScreen = 'record_details';
-                        websocket.send('back');
+                        websocket.send('BACK');
                     } else {
                         websocket.send(command);
                     }
                     break;
                 case 'select_options':
-                    if(command === 'i') {
+                    if(command === 'I') {
                         currentScreen = 'workflow_queues';
-                        websocket.send('i');
-                    } else if(command === 'back') {
+                        websocket.send('I');
+                    } else if(command === 'BACK') {
                         currentScreen = 'claim_details';
-                        websocket.send('back');
+                        websocket.send('BACK');
                     } else {
                         websocket.send(command);
                     }
                     break;
                 case 'workflow_queues':
-                    if(command === 'a') {
-                        websocket.send('a');
-                    } else if(command === 'back') {
+                    if(command === 'A') {
+                        websocket.send('A');
+                    } else if(command === 'BACK') {
                         currentScreen = 'select_options';
-                        websocket.send('back');
+                        websocket.send('BACK');
                     }
                     break;
             }
@@ -667,12 +682,12 @@
         $('#btn-restart').click(function() {
             currentScreen = 'off';
             updateNavigationButtons();
-            websocket.send("start");
+            websocket.send("START");
         });
 
         // Add back button click handler
         $('#back-button').click(function() {
-            handleNavigation('back');
+            handleNavigation('BACK');
         });
 
         websocket.onerror = function(error) {
