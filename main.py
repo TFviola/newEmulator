@@ -95,15 +95,35 @@ def get_sds_data():
 def get_screen(screen_code):
     try:
         # Convert screen_code to ScreenNames enum
-        screen_enum = ScreenNames[screen_code]
+        screen_enum = ScreenNames[screen_code.upper()]
         screen_data = SCREENS.screens.get(screen_enum)
         if screen_data:
-            return jsonify({
+            response_data = {
                 "image_url": screen_data["image_url"],
                 "navigation_options": list(screen_data["navigations"].keys()),
-                "screen_data": screen_data["extra_data"]
-            })
+                "screen_data": screen_data["extra_data"],
+                "screen": screen_code.upper()
+            }
+            print(f"Screen data for {screen_code}:", response_data)
+            return jsonify(response_data)
         return jsonify({"error": "Screen not found"}), 404
+    except Exception as e:
+        print(f"Error getting screen data: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/current-screen')
+def get_current_screen():
+    try:
+        current_screen = SCREENS.current_screen
+        screen_data = SCREENS.screens.get(current_screen)
+        if screen_data:
+            return jsonify({
+                "screen": current_screen.value,
+                "image_url": screen_data["image_url"],
+                "screen_data": screen_data["extra_data"],
+                "navigation_options": list(screen_data["navigations"].keys())
+            })
+        return jsonify({"error": "Current screen not found"}), 404
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -193,11 +213,21 @@ async def handler(websocket):
     connected_clients.add(websocket)
     try:
         initial = SCREENS.handle_input("off")
+        # Add screen data to initial response
+        if initial:
+            screen_data = SCREENS.screens.get(SCREENS.current_screen)
+            if screen_data:
+                initial.update({
+                    "screen": SCREENS.current_screen.value,
+                    "screen_data": screen_data["extra_data"]
+                })
+                # Print screen data to terminal
+                print(f"Screen data for {SCREENS.current_screen.value}:", json.dumps(initial, indent=2))
         await websocket.send(json.dumps(initial))
 
         while True:  # Run indefinitely
             message = await websocket.recv() # Wait indefinitely for message
-            print(f"Received from WebSocket: {message}")
+            print(f"Received message: {message}")
 
             # Handle 'a' command for PDF automation
             if message == 'a':
@@ -209,6 +239,22 @@ async def handler(websocket):
                 try:
                     PDF_AUTOMATOR._is_running = True
                     
+                    # Show loading screen immediately
+                    loading_response = {
+                        "image_url": "static/screenshots/sds_loading.jpg",
+                        "message": "PDF automation in progress...",
+                        "current_screen": SCREENS.current_screen.value,
+                        "navigations": {},
+                        "extra_data": {"status": "loading"}
+                    }
+                    
+                    # Send initial loading state
+                    try:
+                        await websocket.send(json.dumps(loading_response))
+                    except websockets.exceptions.ConnectionClosed:
+                        print("WebSocket connection closed during automation")
+                        return
+                    
                     # Get the current screen state before starting automation
                     initial_response = SCREENS.handle_input("off")  # This ensures we have the current screen
                     
@@ -216,36 +262,59 @@ async def handler(websocket):
                         return PDF_AUTOMATOR.run_download()
                     
                     # Run PDF download in a separate thread
-                    with ThreadPoolExecutor() as executor:
-                        future = executor.submit(run_pdf_download)
-                        success, result = future.result()
+                    success = False
+                    result = None
+                    try:
+                        with ThreadPoolExecutor() as executor:
+                            future = executor.submit(run_pdf_download)
+                            success, result = future.result()
+                    except Exception as e:
+                        print(f"Error in PDF download: {str(e)}")
+                        success = False
+                        result = f"Error: {str(e)}"
                     
                     # Create response using the initial screen state
-                    response = {
-                        "image_url": initial_response["image_url"],
-                        "message": result,
-                        "success": success,
-                        "current_screen": initial_response["current_screen"],
-                        "navigations": initial_response.get("navigations", {}),
-                        "extra_data": initial_response.get("extra_data", {})
-                    }
-                    
-                    # Send response to maintain screen state
-                    await websocket.send(json.dumps(response))
+                    try:
+                        response = {
+                            "image_url": initial_response["image_url"],
+                            "message": result,
+                            "success": success,
+                            "current_screen": initial_response["current_screen"],
+                            "navigations": initial_response.get("navigations", {}),
+                            "extra_data": initial_response.get("extra_data", {})
+                        }
+                        
+                        # Send final response
+                        await websocket.send(json.dumps(response))
+                    except websockets.exceptions.ConnectionClosed:
+                        print("WebSocket connection closed after automation")
                     
                 except Exception as e:
                     print(f"Error in PDF automation: {str(e)}")
-                    error_response = {
-                        "error": str(e),
-                        "message": "Failed to process PDF automation",
-                        "success": False
-                    }
-                    await websocket.send(json.dumps(error_response))
+                    try:
+                        error_response = {
+                            "error": str(e),
+                            "message": "Failed to process PDF automation",
+                            "success": False
+                        }
+                        await websocket.send(json.dumps(error_response))
+                    except websockets.exceptions.ConnectionClosed:
+                        print("WebSocket connection closed while sending error")
                 finally:
                     PDF_AUTOMATOR._is_running = False
             else:
                 try:
                     response = SCREENS.handle_input(message)
+                    # Add screen data to response
+                    if response:
+                        screen_data = SCREENS.screens.get(SCREENS.current_screen)
+                        if screen_data:
+                            response.update({
+                                "screen": SCREENS.current_screen.value,
+                                "screen_data": screen_data["extra_data"]
+                            })
+                            # Print screen data to terminal
+                            print(f"Screen data for {SCREENS.current_screen.value}:", json.dumps(response, indent=2))
                     await websocket.send(json.dumps(response))
                 except Exception as e:
                     print(f"Error handling message: {str(e)}")
@@ -307,16 +376,34 @@ async def main():
     websocket_thread.daemon = True
     websocket_thread.start()
 
-
     while True:
         print("\n1.Type 'data 1' to change claim (1-2). Active data ID:", SCREENS.claim_data_id)
         print("2.Type 'livedata 1' to change live data parsing (0=Off, 1=On). Active live data parsing:", SCREENS.live_data_parsing)
+        print("3.Type 'screen' to display current screen JSON data")
         user_input = input("Type x to quit (Flask runs in background): ")
 
         if user_input == 'x':
             stop_event.set()
             print("Signaled Flask thread to stop. It will exit when ready.") # Informative message
             break
+
+        elif user_input == 'screen':
+            try:
+                current_screen = SCREENS.current_screen
+                screen_data = SCREENS.screens.get(current_screen)
+                if screen_data:
+                    print("\n=== Current Screen JSON Data ===")
+                    print(json.dumps({
+                        "screen": current_screen.value,
+                        "image_url": screen_data["image_url"],
+                        "screen_data": screen_data["extra_data"],
+                        "navigation_options": list(screen_data["navigations"].keys())
+                    }, indent=2))
+                    print("===============================\n")
+                else:
+                    print("No screen data available")
+            except Exception as e:
+                print(f"Error getting screen data: {e}")
 
         elif user_input.startswith("data "):
             message = user_input[5:]
