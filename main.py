@@ -17,6 +17,8 @@ from concurrent.futures import ThreadPoolExecutor
 from util.screens import Screens, ScreenNames
 from util.screen_analyzer import ScreenAnalyzer
 from util.pdf_automation import PDFAutomation
+from util.session_data import SessionData
+from util.sds_screens_mocks import SDS_Screens_Mocks
 
 # since we ran 3 threads, they all listen to this stop_event
 # when it is set, they all decided to stop and close their task, graceful shutdown
@@ -39,7 +41,7 @@ queue_has_items = asyncio.Event() # Event to signal when the queue is not empty
 SCREENS = Screens()
 ANALYZER = ScreenAnalyzer()
 PDF_AUTOMATOR = PDFAutomation()
-
+session_data = SessionData()
 ## REST API ENDPOINTS
 @app.route("/")
 def hello():
@@ -65,6 +67,29 @@ def receive_data():
 @app.route('/static/screenshots/<path:filename>')
 def serve_screenshot(filename):
     return send_from_directory('static/screenshots', filename)
+
+@app.route('/sds_data', methods=['GET'])
+def get_sds_data():
+    """
+    Check if claims.pdf exists in the downloads folder and return its status
+    """
+    try:
+        # Use the download path from PDF_AUTOMATOR
+        download_path = session_data.get_download_path()
+        pdf_path = os.path.join(download_path, "claims.pdf")
+        
+        # Check if the file exists
+        file_exists = os.path.isfile(pdf_path)
+        sds_screens_mocks = SDS_Screens_Mocks()
+        if(file_exists):
+             print("file exists")
+             return sds_screens_mocks.get_sds_screens_mocks("claims1")
+    except Exception as e:
+        return jsonify({
+            "error": str(e),
+            "exists": False
+        }), 500
+    return 
 
 @app.route('/api/screen/<screen_code>')
 def get_screen(screen_code):

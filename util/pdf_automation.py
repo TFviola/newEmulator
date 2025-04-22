@@ -10,12 +10,14 @@ import os
 import time
 import threading
 import shutil
+import sys
+from .session_data import SessionData
 
 class PDFAutomation:
     def __init__(self):
-        # Set the correct absolute path without duplication
-        self.download_path = "D:\\Navigation\\Emulator\\emulatorV2-main\\downloads"
-        os.makedirs(self.download_path, exist_ok=True)
+        # Get the session data instance
+        self.session_data = SessionData()
+        self.download_path = self.session_data.get_download_path()
         self._lock = threading.Lock()
         self._is_running = False  # Add running state flag
         
