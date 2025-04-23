@@ -243,7 +243,7 @@ async def handler(websocket):
                     loading_response = {
                         "image_url": "static/screenshots/sds_loading.jpg",
                         "message": "PDF automation in progress...",
-                        "current_screen": SCREENS.current_screen.value,
+                        "current_screen" : SCREENS.current_screen.value,
                         "navigations": {},
                         "extra_data": {"status": "loading"}
                     }
