@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Globe, Home, FileText, Link, Users, LogOut, HelpCircle, AlertCircle, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Printer, Sun } from 'lucide-react';
+import { Globe, Home, FileText, Link, Users, LogOut, HelpCircle, AlertCircle, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Printer, Sun, ToggleLeft, ToggleRight } from 'lucide-react';
 import claimForm from './images/ClaimFormImage.jpg';
+import claimNegativeForm from './images/ClaimNegativeImage.png';
 import { jsPDF } from 'jspdf';
 import myLogo from './images/myCompanyLogo.png'; 
 import logo from './images/logo.png';
@@ -136,12 +137,13 @@ function App() {
 
 function DocumentViewer({ onBack }: { onBack: () => void }) {
   const [currentPage, setCurrentPage] = useState(1);
+  const [isNegativeForm, setIsNegativeForm] = useState(false);
   const totalPages = 1;
 
   const handlePrintToPDF = () => {
     const img = new Image();
     img.crossOrigin = 'Anonymous';
-    img.src = claimForm;
+    img.src = isNegativeForm ? claimNegativeForm : claimForm;
 
     img.onload = () => {
       const pdf = new jsPDF({
@@ -238,16 +240,26 @@ function DocumentViewer({ onBack }: { onBack: () => void }) {
           <span>|</span>
           <a href="#" className="hover:underline">Document Merge</a>
           <span>|</span>
-          <a
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              handlePrintToPDF();
-            }}
-            className="hover:underline"
-          >
-            Print Document to PDF
-          </a>
+          <div className="flex items-center space-x-2">
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                handlePrintToPDF();
+              }}
+              className="hover:underline"
+            >
+              Print Document to PDF
+            </a>
+            <button
+              onClick={() => setIsNegativeForm(!isNegativeForm)}
+              className="flex items-center space-x-1 text-gray-600 hover:text-gray-800"
+              title={isNegativeForm ? "Switch to Positive Form" : "Switch to Negative Form"}
+            >
+              {isNegativeForm ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
+              <span className="text-xs">{isNegativeForm ? "Negative" : "Positive"}</span>
+            </button>
+          </div>
         </div>
 
         {/* Document Viewer Toolbar */}
@@ -308,7 +320,7 @@ function DocumentViewer({ onBack }: { onBack: () => void }) {
           "
         >
           <img
-            src={claimForm}
+            src={isNegativeForm ? claimNegativeForm : claimForm}
             alt="Health Insurance Claim Form"
             className="w-full h-full object-contain"
           />
