@@ -381,7 +381,7 @@
         
         const COMMAND_THROTTLE = 500;
         const MAX_RECONNECT_ATTEMPTS = 5;
-        const VALID_COMMANDS = new Set(['1', '2', '3', '4', '5', '6', '7', '8', '9', 'F3', 'Credentials', 'back']);
+        const VALID_COMMANDS = new Set(['1', '2', '3', '4', '5', '6', '7', '8', '9', 'F3', 'CREDENTIALS', 'back']);
         const BASE_URL = 'http://localhost:5003';
 
         // Screen navigation mapping
@@ -390,7 +390,7 @@
                 '2': 'PATIENT_SEARCH_SELECTION'
             },
             'PATIENT_SEARCH_SELECTION': {
-                'Credentials': 'PATIENT_DETAILS',
+                'CREDENTIALS': 'PATIENT_DETAILS',
                 'back': 'ELIGIBILITY_MAIN_MENU'
             },
             'PATIENT_DETAILS': {
@@ -608,7 +608,7 @@
                 if (command.toLowerCase() === 'f3') {
                     command = 'F3';
                 } else if (command.toLowerCase() === 'credentials') {
-                    command = 'Credentials';
+                    command = 'CREDENTIALS';
                 } else if (command.toLowerCase() === 'back') {
                     command = 'back';
                 }
@@ -663,9 +663,9 @@
                         .addClass('nav-button')
                         .addClass('action-key')
                         .addClass('small-text')
-                        .html('<span>Credentials</span>')
+                        .html('<span>CREDENTIALS</span>')
                         .click(function() {
-                            handleNavigation('Credentials');
+                            handleNavigation('CREDENTIALS');
                         });
                     actionGroup.append(f3Button);
                     $('#navigation-buttons').append(actionGroup);

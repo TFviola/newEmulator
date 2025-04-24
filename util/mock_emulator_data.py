@@ -265,35 +265,99 @@ search_patient_details = """
 
 review_details = """
 {
-  "screenTitle": "REVIEW DETAILS",
-  "applicationTitle": "HCS CORRECTIONAL MGMT WELLPATH",
-  "summary": "This screen shows the final review details for the selected patient including coverage and benefit information.",
-  "patient_info": {
-    "name": "MARTWON JOHNSON",
-    "id": "BASLP1830",
-    "ssn": "997-13-3338",
-    "dob": "07/20/1992",
-    "status": "ACTIVE"
+  "header": {
+    "title": "EMPLOYEE MASTER",
+    "status": "*REVIEW ONLY*",
+    "system": "HCS CORRECTIONAL MGMT WELLPATH"
   },
-  "coverage_details": {
-    "medical": {
+  "group_info": {
+    "number": "136",
+    "id": "790136",
+    "type": "PA DOC"
+  },
+  "employee_details": {
+    "soc_sec_nbr": "997-13-3338",
+    "cert_number": "BASLP1830",
+    "first_name": "MARTWON",
+    "middle_initial": "D",
+    "last_name": "JOHNSON",
+    "suffix": null
+  },
+  "address": {
+    "address_1": "2500 LISBURN ROAD",
+    "address_2": null,
+    "city_st_zip": "CAMP HILL, PA 17001-"
+  },
+  "contact_info": {
+    "department": "0471",
+    "spc_exp_flg": "N",
+    "work_phone": null,
+    "home_phone": null
+  },
+  "remarks": null,
+  "beneficiary_link": "<BENEFICIARY>",
+  "personal_info": {
+    "sex": "M",
+    "birthday": "07/20/1992",
+    "age": 32,
+    "hired_on": null,
+    "first_eff_date": "06/09/2021",
+    "marital_status": null,
+    "married_on": null,
+    "dep": "N",
+    "mc": "N",
+    "tov": "N",
+    "und": "N"
+  },
+  "status_history": [
+    {
       "status": "Active",
-      "plan": "790136A",
-      "effective_date": "06/09/2021"
+      "eff_date": "06/09/2021"
     },
-    "dental": {
+    {
+      "status": "Termed",
+      "eff_date": "02/12/2019"
+    },
+    {
       "status": "Active",
-      "plan": "790136A",
-      "effective_date": "06/09/2021"
+      "eff_date": "02/01/2017"
+    },
+    {
+      "status": "Active",
+      "eff_date": "01/01/2016"
     }
+  ],
+  "requests": [
+    {
+      "req": "CARDS",
+      "sel": "N"
+    },
+    {
+      "req": "CERTS",
+      "sel": "N"
+    },
+    {
+      "req": "LABEL",
+      "sel": "N"
+    },
+    {
+      "req": "HIPAA",
+      "sel": "N"
+    }
+  ],
+  "completion_info": {
+    "format": null,
+    "completion": [
+      null,
+      null,
+      null,
+      null
+    ]
   },
-  "benefit_info": {
-    "group": "136 790136",
-    "organization": "PA DOC",
-    "underwriter": "790"
-  },
-  "navigation_options": {
-    "back": "Return to Search Patient Details"
+  "footer_options": {
+    "f6": "Notes",
+    "f8": "HIPAA",
+    "f7": "COBRA"
   }
 }
 """

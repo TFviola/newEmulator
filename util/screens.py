@@ -35,7 +35,7 @@ screens = {
     ScreenNames.PATIENT_SEARCH_SELECTION: {
         "image_url": "patient_search_selection.jpg",
         "navigations": {
-            "Credentials": ScreenNames.PATIENT_DETAILS,
+            "CREDENTIALS": ScreenNames.PATIENT_DETAILS,
             "back": ScreenNames.ELIGIBILITY_MAIN_MENU
         },
         "mock_data": patient_search_selection
@@ -147,7 +147,7 @@ class Screens:
         # Get current screen's valid navigation options
         current_screen_data = self.screens[self.current_screen]
         valid_commands = current_screen_data["navigations"]
-
+      
         # Check if command is valid for current screen
         if input_str in valid_commands:
             next_screen = valid_commands[input_str]
