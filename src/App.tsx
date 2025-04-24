@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Globe, Home, FileText, Link, Users, LogOut, HelpCircle, AlertCircle, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Printer, Sun, ToggleLeft, ToggleRight } from 'lucide-react';
 import claimForm from './images/ClaimFormImage.jpg';
 import claimNegativeForm from './images/ClaimNegativeImage.png';
 import { jsPDF } from 'jspdf';
 import myLogo from './images/myCompanyLogo.png'; 
 import logo from './images/logo.png';
-// Add this import
+import SessionManager from './session/SessionManager';
+
 function App() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -138,7 +139,29 @@ function App() {
 function DocumentViewer({ onBack }: { onBack: () => void }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [isNegativeForm, setIsNegativeForm] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const totalPages = 1;
+  const sessionManager = SessionManager.getInstance();
+
+  // Initialize state from session on component mount
+  useEffect(() => {
+    const initializeState = async () => {
+      setIsLoading(true);
+      // Wait for the server state to be fetched
+      await new Promise(resolve => setTimeout(resolve, 100));
+      setIsNegativeForm(sessionManager.getFormState());
+      setIsLoading(false);
+    };
+    
+    initializeState();
+  }, []);
+
+  // Update session when state changes
+  const handleToggleForm = () => {
+    const newState = !isNegativeForm;
+    setIsNegativeForm(newState);
+    sessionManager.setFormState(newState);
+  };
 
   const handlePrintToPDF = () => {
     const img = new Image();
@@ -252,9 +275,10 @@ function DocumentViewer({ onBack }: { onBack: () => void }) {
               Print Document to PDF
             </a>
             <button
-              onClick={() => setIsNegativeForm(!isNegativeForm)}
+              onClick={handleToggleForm}
               className="flex items-center space-x-1 text-gray-600 hover:text-gray-800"
               title={isNegativeForm ? "Switch to Positive Form" : "Switch to Negative Form"}
+              disabled={isLoading}
             >
               {isNegativeForm ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
               <span className="text-xs">{isNegativeForm ? "Negative" : "Positive"}</span>
@@ -329,6 +353,7 @@ function DocumentViewer({ onBack }: { onBack: () => void }) {
     </div>
   );
 }
+
 function Dashboard({ onImageRequestClick }: { onImageRequestClick: () => void }) {
   return (
     <div className="min-h-screen bg-gray-50">
