@@ -11,6 +11,7 @@ class ScreenNames(Enum):
     CLAIM_DETAILS = "claim_details"
     SELECT_OPTIONS = "select_options"
     WORKFLOW_IMAGES = "workflow_images"
+    SDS_LOADING = "sds_loading"
 
 screens = {
     ScreenNames.OFF: {
@@ -111,10 +112,15 @@ screens = {
     ScreenNames.WORKFLOW_IMAGES: {
         "image_url": "workflow_images.jpg",
         "navigations": {
-            "A": ScreenNames.WORKFLOW_IMAGES,
+            "A": ScreenNames.SDS_LOADING,
             "BACK": ScreenNames.SELECT_OPTIONS
         },
         "extra_data": workflow_images
+    },
+    ScreenNames.SDS_LOADING: {
+        "image_url": "sds_loading.jpg",
+        "navigations": {},
+        "extra_data": {"status": "loading"}
     }
 }
 

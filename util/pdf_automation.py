@@ -32,7 +32,7 @@ class PDFAutomation:
             "profile.default_content_settings.popups": 0
         })
         # Run in headless mode
-        self.chrome_options.add_argument("--headless=new")  # Use new headless mode
+        # self.chrome_options.add_argument("--headless=new")  # Use new headless mode
         self.chrome_options.add_argument("--disable-gpu")
         self.chrome_options.add_argument("--no-sandbox")
         self.chrome_options.add_argument("--disable-dev-shm-usage")
@@ -50,6 +50,7 @@ class PDFAutomation:
         return False
 
     def download_pdf(self):
+        session_data = SessionData()
         with self._lock:  # Ensure thread safety
             driver = None
             try:
@@ -94,6 +95,24 @@ class PDFAutomation:
                     # Wait for the PDF link to be clickable
                     print("Waiting for PDF link...")
                     time.sleep(2)
+                    
+                    # Check for Positive/Negative text
+                    print("Checking claim status...")
+                    status_element = wait.until(
+                        EC.presence_of_element_located((By.CSS_SELECTOR, "span.text-xs"))
+                    )
+                    
+                    status_text = status_element.text.strip()
+
+                    if(status_text == "Positive"):
+                        session_data.positive_pdf = True
+                        pdf_filename = "claimsp.pdf"
+                    else:
+                        session_data.positive_pdf = False
+                        pdf_filename = "claimsn.pdf"
+
+                    print(f"Claim status: {status_text}, will save as {pdf_filename}")
+                    
                     pdf_link = wait.until(
                         EC.element_to_be_clickable((By.LINK_TEXT, "Print Document to PDF"))
                     )
@@ -112,13 +131,13 @@ class PDFAutomation:
                                 [os.path.join(self.download_path, f) for f in downloaded_files],
                                 key=os.path.getctime
                             )
-                            target_file = os.path.join(self.download_path, "claims.pdf")
+                            target_file = os.path.join(self.download_path, pdf_filename)
                             
-                            # Remove existing claims.pdf if it exists
+                            # Remove existing file if it exists
                             if os.path.exists(target_file):
                                 os.remove(target_file)
                                 
-                            # Rename the downloaded file to claims.pdf
+                            # Rename the downloaded file
                             shutil.move(latest_file, target_file)
                             
                             print(f"Success: PDF saved as {target_file}")

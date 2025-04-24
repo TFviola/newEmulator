@@ -15,7 +15,7 @@ from chatgpt_initialize import get_chatgpt_response
 
 load_dotenv()
 
-REST_API_URL = "http://localhost:5000/command"
+REST_API_URL = "http://localhost:5001/command"
 SCREENSHOT_FILENAME = "screenshots/tempscreenshot.png"
 
 stop_event = threading.Event()

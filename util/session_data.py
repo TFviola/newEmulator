@@ -20,6 +20,7 @@ class SessionData:
         self.current_screen = None
         self.user_id = None
         self.session_id = None
+        self.positive_pdf = True
         
     def get_download_path(self):
         """Get the download path"""

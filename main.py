@@ -57,11 +57,84 @@ def receive_data():
     data = request.get_json()
     print(f"Received data from REST API: {data}")
     
-    response = SCREENS.handle_input(data["message"])
+    # Special handling for 'A' command
+    if data["message"] == 'A':
+        # Check if automation is already running
+        if hasattr(PDF_AUTOMATOR, '_is_running') and PDF_AUTOMATOR._is_running:
+            print("PDF automation already in progress, skipping...")
+            return jsonify({"message": "PDF automation already in progress"})
+        
+        try:
+            PDF_AUTOMATOR._is_running = True
+            
+            # Show loading screen immediately
+            loading_response = {
+                "image_url": "static/screenshots/sds_loading.jpg",
+                "message": "PDF automation in progress...",
+                "current_screen": SCREENS.current_screen.value,
+                "navigations": {},
+                "extra_data": {"status": "loading"},
+                "last_command": "A"
+            }
+            
+            # Put loading response in queue
+            message_queue.put_nowait(loading_response)
+            queue_has_items.set()
+            
+            # Get the current screen state before starting automation
+            initial_response = SCREENS.handle_input("OFF")
+            
+            # Run PDF download in a separate thread
+            def run_pdf_download():
+                return PDF_AUTOMATOR.run_download()
+            
+            success = False
+            result = None
+            try:
+                with ThreadPoolExecutor() as executor:
+                    future = executor.submit(run_pdf_download)
+                    success, result = future.result()
+            except Exception as e:
+                print(f"Error in PDF download: {str(e)}")
+                success = False
+                result = f"Error: {str(e)}"
+            
+            # Create response using the initial screen state
+            response = {
+                "image_url": initial_response["image_url"],
+                "message": result,
+                "success": success,
+                "current_screen": initial_response["current_screen"],
+                "navigations": initial_response.get("navigations", {}),
+                "extra_data": initial_response.get("extra_data", {}),
+                "last_command": "A"
+            }
+            
+            # Put final response in queue
+            message_queue.put_nowait(response)
+            queue_has_items.set()
+            
+            return jsonify(response)
+            
+        except Exception as e:
+            print(f"Error in PDF automation: {str(e)}")
+            error_response = {
+                "error": str(e),
+                "message": "Failed to process PDF automation",
+                "success": False,
+                "last_command": "A"
+            }
+            message_queue.put_nowait(error_response)
+            queue_has_items.set()
+            return jsonify(error_response)
+        finally:
+            PDF_AUTOMATOR._is_running = False
     
+    # Normal command handling
+    response = SCREENS.handle_input(data["message"])
     _jsonify = jsonify(response)
     message_queue.put_nowait(_jsonify.get_json())
-    queue_has_items.set() # Signal that there are items in the queue
+    queue_has_items.set()
     return _jsonify
 
 @app.route('/static/screenshots/<path:filename>')
@@ -76,14 +149,28 @@ def get_sds_data():
     try:
         # Use the download path from PDF_AUTOMATOR
         download_path = session_data.get_download_path()
-        pdf_path = os.path.join(download_path, "claims.pdf")
+
+        if(session_data.positive_pdf):
+            pdf_filename = "claimsp.pdf"
+        else:
+            pdf_filename = "claimsn.pdf"
+
+        pdf_path = os.path.join(download_path, pdf_filename)
         
         # Check if the file exists
         file_exists = os.path.isfile(pdf_path)
         sds_screens_mocks = SDS_Screens_Mocks()
         if(file_exists):
              print("file exists")
-             return sds_screens_mocks.get_sds_screens_mocks("claims1")
+             if(session_data.positive_pdf):
+                result = sds_screens_mocks.get_sds_screens_mocks("claims1")
+                print(result)
+                return result
+             else:
+                result = sds_screens_mocks.get_sds_screens_mocks("claims2")
+                print(result)
+                return result
+             
     except Exception as e:
         return jsonify({
             "error": str(e),
@@ -180,8 +267,8 @@ def analyze_screen():
 
     response = ANALYZER.take_screenshot_and_analyze()
     _jsonify = jsonify(response)
-    # message_queue.put_nowait(_jsonify.get_json())
-    # queue_has_items.set()
+    message_queue.put_nowait(_jsonify.get_json())
+    queue_has_items.set()
     return _jsonify
 
 ## REST API SERVER THREAD - INITIALIZE
@@ -430,7 +517,7 @@ async def main():
         elif user_input.startswith("r "):
             message = user_input[2:]
             try:
-                response = requests.post('http://localhost:5000/command', json={"message": message})
+                response = requests.post('http://localhost:5001/command', json={"message": message})
                 print(f"REST API response: {response.json()}")
             except requests.exceptions.RequestException as e:
                 print(f"Error sending to REST API: {e}")

@@ -15,7 +15,7 @@ stop_event = threading.Event()
 
 class EmulatorClient:
     def __init__(self):
-        self.REST_API_URL = "http://localhost:5000/api"
+        self.REST_API_URL = "http://localhost:5001/api"
         self.current_screen = None
         self.typed_text = ""
 
